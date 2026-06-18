@@ -21,13 +21,14 @@ export async function getTicket(id) {
 }
 export async function addTicket(data) {
   const payload = {
-    status: 'Open', assigned_to: '', tags: [], sentiment: 'Calm', summary: '',
-    ai_triaged: false, resolved_at: null,
+    assigned_to: '', tags: [], sentiment: 'Calm', summary: '',
+    ai_triaged: false,
     requester_type: 'Internal', requester_department: '', requester_phone: '',
     ...data,
   }
-  const { data: row, error } = await supabase.from('tickets').insert(payload).select().single()
-  throwIfError(error)
+  const { data: row, error } = await supabase.functions.invoke('submit-ticket', { body: payload })
+  if (error) throw new Error(error.message || 'Couldn\u2019t submit your request.')
+  if (row?.error) throw new Error(row.error)
   return row
 }
 export async function updateTicket(id, patch) {
