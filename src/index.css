@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-ink antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  * { -webkit-tap-highlight-color: transparent; }
+}
+
+@layer components {
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-ink
+           placeholder:text-slate-400 outline-none transition
+           focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+  }
+  .label { @apply text-sm font-medium text-slate-700 mb-1.5 block; }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-sm shadow-brand-600/20; }
+  .btn-ghost   { @apply btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50; }
+  .btn-danger  { @apply btn bg-red-50 text-red-700 hover:bg-red-100; }
+  .btn-sm      { @apply px-3 py-1.5 text-xs rounded-lg; }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .navlink {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-navy-300 transition
+           hover:bg-white/[0.06] hover:text-white;
+  }
+  .navlink-active { @apply bg-brand-600/90 text-white shadow-sm; }
+  .card { @apply rounded-2xl border border-slate-200 bg-white shadow-card; }
+  .th { @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400; }
+  .td { @apply px-4 py-3.5 align-middle; }
+  .switch {
+    @apply relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition;
+  }
+  .switch-knob {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white shadow transition;
+  }
+}
+
+/* tidy scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; border: 2px solid #f1f5f9; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* fade/slide utility for modals + toasts */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+.anim-fade { animation: fadeIn .15s ease-out; }
+.anim-slide { animation: slideUp .18s ease-out; }
