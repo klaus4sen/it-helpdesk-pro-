@@ -3,7 +3,7 @@
 // ============================================================
  
 export const TICKET_ALERT_RECIPIENTS = [
-  'altayeb@1alrai.sa',
+  'ICT@1alrai.sa',
 ]
  
 async function callSendEmail(payload) {
