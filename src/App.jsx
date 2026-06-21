@@ -220,8 +220,11 @@ export default function App() {
 
   useEffect(() => {
     getSession().then(s => { setSess(s); setChecking(false) }).catch(() => setChecking(false))
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      getSession().then(setSess).catch(() => setSess(null))
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') { setSess(null); return }
+      // Token refreshes / other events: re-check, but never wipe an existing
+      // session just because the profile lookup had a transient hiccup.
+      getSession().then(s => { if (s) setSess(s) }).catch(() => {})
     })
     return () => sub?.subscription?.unsubscribe()
   }, [])
