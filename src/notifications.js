@@ -1,18 +1,22 @@
 // ============================================================
 //  Email notifications.
 // ============================================================
-import { supabase } from './supabaseClient'
-
+ 
 export const TICKET_ALERT_RECIPIENTS = [
   'altayeb@1alrai.sa',
 ]
-
+ 
 async function callSendEmail(payload) {
-  const { data, error } = await supabase.functions.invoke('send-email', { body: payload })
-  if (error) throw new Error(error.message || 'Email function failed.')
+  const res = await fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await res.json()
+  if (!res.ok || data.error) throw new Error(data.error?.message || data.error || 'Email function failed.')
   return data
 }
-
+ 
 export async function notifyNewTicket(ticket) {
   return callSendEmail({
     type: 'new_ticket',
@@ -21,7 +25,7 @@ export async function notifyNewTicket(ticket) {
     ticket,
   })
 }
-
+ 
 export async function notifyTicketReply(ticket, replyBody, authorName) {
   if (!ticket.requester_email) return null
   return callSendEmail({

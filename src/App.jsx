@@ -1489,6 +1489,9 @@ function Detail({ ticket, onClose, onChanged, onDeleted, agent }) {
     try {
       const u = await updateTicket(t.id, { [field]: value })
       setT(u); onChanged(u)
+      if (field === 'status' && ['Resolved', 'Closed'].includes(value)) {
+        notifyTicketReply(u, `Your ticket status was updated to "${value}".`, agent).catch(() => {})
+      }
     } catch (e) { setErr(e.message || 'Couldn\u2019t save that change.') }
   }
   const post = async (text) => {
