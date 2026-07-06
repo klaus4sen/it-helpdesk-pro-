@@ -50,8 +50,8 @@ const DEPARTMENT_LABELS_AR = {
 // ticket (kept in English so it stays consistent for reporting), "en"/"ar"
 // are only the display labels.
 const COMPANIES = [
-  { value: 'wahed_alrai', en: 'Wahed Alrai', ar: '\u0648\u0627\u062d\u062f \u0627\u0644\u0631\u0623\u064a' },
-  { value: 'khadamaty', en: 'Khadamaty', ar: '\u062e\u062f\u0645\u0627\u062a\u064a' },
+  { value: '1alrai', en: '1Alrai', ar: '\u0648\u0627\u062d\u062f \u0627\u0644\u0631\u0623\u064a' },
+  { value: 'khadamati', en: 'Khadamati', ar: '\u062e\u062f\u0645\u0627\u062a\u064a' },
   { value: 'smart_decision', en: 'Smart Decision', ar: '\u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0630\u0643\u064a' },
   { value: 'executive_management', en: 'Executive Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a\u0629' },
 ]
