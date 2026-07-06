@@ -496,28 +496,6 @@ function Portal({ onStaff }) {
           </div>
 
           <div className="mt-5">
-            <label className="label">
-              {form.requester_type === 'Internal' ? t.deptLabel : t.extWhoLabel} <span className="font-normal text-slate-400">{t.optional}</span>
-            </label>
-            <div className="relative">
-              <Briefcase size={15} className={`absolute top-3 text-slate-400 ${t.dir === 'rtl' ? 'right-3.5' : 'left-3.5'}`} />
-              {form.requester_type === 'Internal' ? (
-                <select className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`} value={form.requester_department} onChange={e => set('requester_department', e.target.value)}>
-                  <option value="">{t.deptPh}</option>
-                  {departments.map(d => (
-                    <option key={d.id} value={d.name}>
-                      {lang === 'ar' ? (DEPARTMENT_LABELS_AR[d.name] || d.name) : d.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`} placeholder={t.extPh}
-                  value={form.requester_department} onChange={e => set('requester_department', e.target.value)} />
-              )}
-            </div>
-          </div>
-
-          <div className="mt-5">
             <label className="label">{t.needHelp} <span className="text-red-500">*</span></label>
             <input className="input" placeholder={t.needHelpPh} value={form.title} onChange={e => set('title', e.target.value)} />
           </div>
