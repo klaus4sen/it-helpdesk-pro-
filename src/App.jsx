@@ -54,6 +54,7 @@ const COMPANIES = [
   { value: 'khadamati', en: 'Khadamati', ar: '\u062e\u062f\u0645\u0627\u062a\u064a' },
   { value: 'smart_decision', en: 'Smart Decision', ar: '\u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0630\u0643\u064a' },
   { value: 'executive_management', en: 'Executive Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a\u0629' },
+  { value: 'support_services', en: 'Support Services', ar: 'الخدمات المساندة' },
 ]
 
 const COMPANY_DIVISIONS = {
@@ -75,6 +76,11 @@ const COMPANY_DIVISIONS = {
     { value: 'deputy_ceo', en: 'Deputy CEO', ar: '\u0646\u0627\u0626\u0628 \u0627\u0644\u0631\u0626\u064a\u0633 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a' },
     { value: 'business_project_development', en: 'Business & Project Development Management', ar: '\u0625\u062f\u0627\u0631\u0629 \u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0648\u0627\u0644\u0645\u0634\u0627\u0631\u064a\u0639' },
     { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  ],
+   support_services: [
+    { value: 'human_resources', en: 'Human Resources', ar: 'موارد بشرية' },
+    { value: 'it_dept', en: 'IT', ar: 'تقنية المعلومات' },
+    { value: 'logistics_support', en: 'Logistics Support', ar: 'الدعم اللوجستي' },
   ],
 }
 
@@ -339,10 +345,6 @@ function Portal({ onStaff }) {
       setErr(t.errName)
       return
     }
-    if (!form.requester_email) {
-      setErr(t.errEmail)
-      return
-    }
     if (!form.requester_department) {
       setErr(t.errDept)
       return
@@ -496,7 +498,7 @@ function Portal({ onStaff }) {
 
           <div className="mt-5">
             <label className="label">
-              {form.requester_type === 'Internal' ? t.deptLabel : t.extWhoLabel} <span className="text-red-500">*</span>
+              {form.requester_type === 'Internal' ? t.deptLabel : t.extWhoLabel} <span className="font-normal text-slate-400">{t.optional}</span>
             </label>
             <div className="relative">
               <Briefcase size={15} className={`absolute top-3 text-slate-400 ${t.dir === 'rtl' ? 'right-3.5' : 'left-3.5'}`} />
