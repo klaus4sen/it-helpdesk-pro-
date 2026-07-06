@@ -50,40 +50,39 @@ const DEPARTMENT_LABELS_AR = {
 // ticket (kept in English so it stays consistent for reporting), "en"/"ar"
 // are only the display labels.
 const COMPANIES = [
-  { value: '1alrai', en: '1Alrai', ar: '\u0648\u0627\u062d\u062f \u0627\u0644\u0631\u0623\u064a' },
-  { value: 'khadamati', en: 'Khadamati', ar: '\u062e\u062f\u0645\u0627\u062a\u064a' },
-  { value: 'smart_decision', en: 'Smart Decision', ar: '\u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0630\u0643\u064a' },
-  { value: 'executive_management', en: 'Executive Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a\u0629' },
+  { value: '1alrai', en: '1Alrai', ar: 'واحد الرأي' },
+  { value: 'khadamati', en: 'Khadamati', ar: 'خدماتي' },
+  { value: 'smart_decision', en: 'Smart Decision', ar: 'القرار الذكي' },
+  { value: 'executive_management', en: 'Executive Management', ar: 'الإدارة التنفيذية' },
   { value: 'support_services', en: 'Support Services', ar: 'الخدمات المساندة' },
 ]
 
 const COMPANY_DIVISIONS = {
-  wahed_alrai: [
-    { value: 'banks_dept', en: 'Banks Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u0628\u0646\u0648\u0643' },
-    { value: 'corporates_individuals_dept', en: 'Corporates & Individuals Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u0634\u0631\u0643\u0627\u062a \u0648\u0627\u0644\u0623\u0641\u0631\u0627\u062f' },
-    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  '1alrai': [
+    { value: 'banks_dept', en: 'Banks Department', ar: 'قسم البنوك' },
+    { value: 'corporates_individuals_dept', en: 'Corporates & Individuals Department', ar: 'قسم الشركات والأفراد' },
+    { value: 'financial_management', en: 'Financial Management', ar: 'الإدارة المالية' },
   ],
-  khadamaty: [
-    { value: 'markets_management', en: 'Markets Management', ar: '\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0623\u0633\u0648\u0627\u0642' },
-    { value: 'central_management', en: 'Central Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0631\u0643\u0632\u064a\u0629' },
-    { value: 'consulting_services', en: 'Consulting Services', ar: '\u0627\u0644\u062e\u062f\u0645\u0627\u062a \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u064a\u0629' },
-    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  khadamati: [
+    { value: 'markets_management', en: 'Markets Management', ar: 'إدارة الأسواق' },
+    { value: 'central_management', en: 'Central Management', ar: 'الإدارة المركزية' },
+    { value: 'consulting_services', en: 'Consulting Services', ar: 'الخدمات الاستشارية' },
+    { value: 'financial_management', en: 'Financial Management', ar: 'الإدارة المالية' },
   ],
   smart_decision: [
-    { value: 'courses_dept', en: 'Training Courses Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u062f\u0648\u0631\u0627\u062a' },
+    { value: 'courses_dept', en: 'Training Courses Department', ar: 'قسم الدورات' },
   ],
   executive_management: [
-    { value: 'deputy_ceo', en: 'Deputy CEO', ar: '\u0646\u0627\u0626\u0628 \u0627\u0644\u0631\u0626\u064a\u0633 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a' },
-    { value: 'business_project_development', en: 'Business & Project Development Management', ar: '\u0625\u062f\u0627\u0631\u0629 \u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0648\u0627\u0644\u0645\u0634\u0627\u0631\u064a\u0639' },
-    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+    { value: 'deputy_ceo', en: 'Deputy CEO', ar: 'نائب الرئيس التنفيذي' },
+    { value: 'business_project_development', en: 'Business & Project Development Management', ar: 'إدارة تطوير الأعمال والمشاريع' },
+    { value: 'financial_management', en: 'Financial Management', ar: 'الإدارة المالية' },
   ],
-   support_services: [
+  support_services: [
     { value: 'human_resources', en: 'Human Resources', ar: 'موارد بشرية' },
     { value: 'it_dept', en: 'IT', ar: 'تقنية المعلومات' },
     { value: 'logistics_support', en: 'Logistics Support', ar: 'الدعم اللوجستي' },
   ],
 }
-
 const priorityChip = {
   Low: 'bg-slate-100 text-slate-600', Medium: 'bg-blue-50 text-blue-700',
   High: 'bg-amber-50 text-amber-700', Critical: 'bg-red-50 text-red-700',
