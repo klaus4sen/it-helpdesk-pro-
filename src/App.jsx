@@ -344,10 +344,6 @@ function Portal({ onStaff }) {
       setErr(t.errName)
       return
     }
-    if (!form.requester_department) {
-      setErr(t.errDept)
-      return
-    }
     if (!form.company || !form.company_division) {
       setErr(t.errCompany)
       return
