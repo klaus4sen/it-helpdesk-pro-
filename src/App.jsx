@@ -28,6 +28,56 @@ const STATUSES = ['Open', 'In Progress', 'Resolved', 'Closed']
 const CATEGORIES = ['Hardware', 'Software', 'Network', 'Account', 'Email', 'Other']
 const REQUESTER_TYPES = ['Internal', 'External']
 
+// Arabic display labels for the public employee portal. The underlying
+// value saved to the database stays in English (matches the agent
+// console + AI engine), only the label shown to the employee changes.
+const CATEGORY_LABELS_AR = {
+  Hardware: '\u0623\u062c\u0647\u0632\u0629', Software: '\u0628\u0631\u0645\u062c\u064a\u0627\u062a', Network: '\u0627\u0644\u0627\u0646\u062a\u0631\u0646\u062a',
+  Account: '\u0627\u0644\u062d\u0633\u0627\u0628', Email: '\u0627\u064a\u0645\u064a\u0644', Other: '\u0623\u062e\u0631\u0649',
+}
+const PRIORITY_LABELS_AR = {
+  Low: '\u0639\u0627\u062f\u064a', Medium: '\u0645\u062a\u0648\u0633\u0637', High: '\u0639\u0627\u0644\u064a', Critical: '\u0645\u0647\u0645',
+}
+const DEPARTMENT_LABELS_AR = {
+  Finance: '\u0627\u0644\u0645\u0627\u0644\u064a\u0629', 'Human Resources': '\u0627\u0644\u0645\u0648\u0627\u0631\u062f \u0627\u0644\u0628\u0634\u0631\u064a\u0629',
+  IT: '\u062a\u0642\u0646\u064a\u0629 \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062a', Operations: '\u0627\u0644\u0639\u0645\u0644\u064a\u0627\u062a',
+  Sales: '\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a', Other: '\u0623\u062e\u0631\u0649',
+}
+
+// Company / division picker for the public employee portal. Each company
+// has its own list of sub-departments; the second dropdown re-populates
+// based on which company is selected. "value" is what gets saved to the
+// ticket (kept in English so it stays consistent for reporting), "en"/"ar"
+// are only the display labels.
+const COMPANIES = [
+  { value: 'wahed_alrai', en: 'Wahed Alrai', ar: '\u0648\u0627\u062d\u062f \u0627\u0644\u0631\u0623\u064a' },
+  { value: 'khadamaty', en: 'Khadamaty', ar: '\u062e\u062f\u0645\u0627\u062a\u064a' },
+  { value: 'smart_decision', en: 'Smart Decision', ar: '\u0627\u0644\u0642\u0631\u0627\u0631 \u0627\u0644\u0630\u0643\u064a' },
+  { value: 'executive_management', en: 'Executive Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a\u0629' },
+]
+
+const COMPANY_DIVISIONS = {
+  wahed_alrai: [
+    { value: 'banks_dept', en: 'Banks Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u0628\u0646\u0648\u0643' },
+    { value: 'corporates_individuals_dept', en: 'Corporates & Individuals Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u0634\u0631\u0643\u0627\u062a \u0648\u0627\u0644\u0623\u0641\u0631\u0627\u062f' },
+    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  ],
+  khadamaty: [
+    { value: 'markets_management', en: 'Markets Management', ar: '\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0623\u0633\u0648\u0627\u0642' },
+    { value: 'central_management', en: 'Central Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0631\u0643\u0632\u064a\u0629' },
+    { value: 'consulting_services', en: 'Consulting Services', ar: '\u0627\u0644\u062e\u062f\u0645\u0627\u062a \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u064a\u0629' },
+    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  ],
+  smart_decision: [
+    { value: 'courses_dept', en: 'Training Courses Department', ar: '\u0642\u0633\u0645 \u0627\u0644\u062f\u0648\u0631\u0627\u062a' },
+  ],
+  executive_management: [
+    { value: 'deputy_ceo', en: 'Deputy CEO', ar: '\u0646\u0627\u0626\u0628 \u0627\u0644\u0631\u0626\u064a\u0633 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a' },
+    { value: 'business_project_development', en: 'Business & Project Development Management', ar: '\u0625\u062f\u0627\u0631\u0629 \u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0648\u0627\u0644\u0645\u0634\u0627\u0631\u064a\u0639' },
+    { value: 'financial_management', en: 'Financial Management', ar: '\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0627\u0644\u064a\u0629' },
+  ],
+}
+
 const priorityChip = {
   Low: 'bg-slate-100 text-slate-600', Medium: 'bg-blue-50 text-blue-700',
   High: 'bg-amber-50 text-amber-700', Critical: 'bg-red-50 text-red-700',
@@ -56,7 +106,7 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString()
 }
 const initials = (n) => (n || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()
-const tkey = (n) => `IT-${n}`
+const tkey = () => 'IT-Ticket'
 function DonutChart({ slices, size = 168, thickness = 22, centerLabel = 'Tickets' }) {
   const total = slices.reduce((sum, s) => sum + s.value, 0)
   const r = (size - thickness) / 2
@@ -178,17 +228,20 @@ const T = {
     weEmail: 'We\u2019ll email you updates at',
     sortedByAI: 'Sorted automatically by AI', priorityWord: 'priority', assignedTo: 'Assigned to',
     expectedReply: 'Expected first response', another: 'Submit another request',
+    companyLabel: 'Company', companyPh: 'Select the company\u2026',
+    divisionLabel: 'Division / Section', divisionPh: 'Select the division\u2026',
+    errCompany: 'Please select the company and its division.',
   },
   ar: {
     dir: 'rtl',
     badge: '\u062f\u0639\u0645 \u0628\u0645\u0633\u0627\u0639\u062f\u0629 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a',
     heading: '\u0643\u064a\u0641 \u064a\u0645\u0643\u0646\u0646\u0627 \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629\u061f',
-    sub: '\u0627\u0648\u0635\u0641 \u0627\u0644\u0645\u0634\u0643\u0644\u0629 \u0648\u0633\u0646\u0642\u0648\u0645 \u0628\u062a\u0648\u062a\u064a\u0647\u0647\u0627 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627 \u0644\u0644\u062c\u0647\u0629 \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u0629\u060c \u0648\u0642\u062f \u062a\u062c\u062f \u062d\u0644\u0627\u064b \u0641\u0648\u0631\u064a\u0627\u064b \u0645\u0646 \u0645\u0642\u0627\u0644 \u0645\u0642\u062a\u0631\u062d.',
+    sub: '\u0627\u0648\u0635\u0641 \u0627\u0644\u0645\u0634\u0643\u0644\u0629 \u0648\u0633\u0646\u0642\u0648\u0645 \u0628\u062a\u0648\u062c\u064a\u0647\u0647\u0627 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627 \u0644\u0644\u062c\u0647\u0629 \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u0629\u060c \u0648\u0642\u062f \u062a\u062c\u062f \u062d\u0644\u0627\u064b \u0641\u0648\u0631\u064a\u0627\u064b \u0645\u0646 \u0645\u0642\u0627\u0644 \u0645\u0642\u062a\u0631\u062d.',
     name: '\u0627\u0633\u0645\u0643', namePh: '\u0645\u062d\u0644: \u0633\u0627\u0631\u0629 \u0627\u0644\u0645\u0637\u064a\u0631\u064a',
     email: '\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0638\u064a\u0641\u064a', emailPh: 'you@company.com',
     phone: '\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641', phoneOpt: '(\u0627\u062e\u062a\u064a\u0627\u0631\u064a)', phonePh: '+966 5x xxx xxxx',
     insideOutside: '\u0647\u0644 \u0623\u0646\u062a \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629 \u0623\u0645 \u062e\u0627\u0631\u062c\u0647\u0627\u061f',
-    employee: '\u0645\u0648\u0638\u0641', external: '\u062a\u0627\u0628\u0639 \u062e\u0627\u0631\u062a\u064a',
+    employee: '\u0645\u0648\u0638\u0641', external: '\u062a\u0627\u0628\u0639 \u062e\u0627\u0631\u062c\u064a',
     deptLabel: '\u0645\u0627 \u0647\u064a \u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u064a \u062a\u0639\u0645\u0644 \u0628\u0647\u0627\u061f', extWhoLabel: '\u0645\u0646 \u0623\u0646\u062a / \u0645\u0627 \u0647\u064a \u0627\u0644\u0634\u0631\u0643\u0629\u061f',
     deptPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0642\u0633\u0645\u2026', extPh: '\u0645\u062d\u0644: \u0645\u0648\u0631\u062f (\u0645\u0648\u0631\u062f)\u060c \u0645\u062a\u0639\u0627\u0642\u062f\u060c \u0632\u0627\u0626\u0631\u2026',
     needHelp: '\u0628\u0645\u0627\u0630\u0627 \u062a\u062d\u062a\u0627\u062c \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629\u061f', needHelpPh: '\u0645\u062d\u0644: \u0627\u0644\u0644\u0627\u0628\u062a\u0648\u0628 \u0644\u0627 \u064a\u062a\u0635\u0644 \u0628\u0627\u0644\u0648\u0627\u064a \u0641\u0627\u064a',
@@ -207,6 +260,9 @@ const T = {
     weEmail: '\u0633\u0646\u0631\u0633\u0644 \u0644\u0643 \u0627\u0644\u062a\u062d\u062f\u064a\u062b\u0627\u062a \u0639\u0644\u0649 \u0627\u0644\u0628\u0631\u064a\u062f',
     sortedByAI: '\u062a\u0645 \u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0628\u0648\u0627\u0633\u0637\u0629 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a', priorityWord: '\u0627\u0644\u0623\u0648\u0644\u0648\u064a\u0629', assignedTo: '\u0645\u062e\u0635\u0651\u0635 \u0644\u0640',
     expectedReply: '\u0627\u0644\u0631\u062f \u0627\u0644\u0645\u062a\u0648\u0642\u0639', another: '\u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0622\u062e\u0631',
+    companyLabel: '\u0627\u0644\u0634\u0631\u0643\u0629', companyPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0634\u0631\u0643\u0629\u2026',
+    divisionLabel: '\u0627\u0644\u0642\u0633\u0645', divisionPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0642\u0633\u0645\u2026',
+    errCompany: '\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0627\u0644\u0642\u0633\u0645 \u0627\u0644\u062a\u0627\u0628\u0639 \u0644\u0647\u0627.',
   },
 }
 
@@ -258,6 +314,7 @@ function Portal({ onStaff }) {
   const empty = {
     requester_name: '', requester_email: '', requester_phone: '',
     requester_type: 'Internal', requester_department: '',
+    company: '', company_division: '',
     title: '', description: '', category: 'Other', priority: 'Medium',
   }
   const [form, setForm] = useState(empty)
@@ -288,6 +345,10 @@ function Portal({ onStaff }) {
     }
     if (!form.requester_department) {
       setErr(t.errDept)
+      return
+    }
+    if (!form.company || !form.company_division) {
+      setErr(t.errCompany)
       return
     }
     setBusy(true)
@@ -362,6 +423,42 @@ function Portal({ onStaff }) {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-7">
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
+              <label className="label">{t.companyLabel} <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <Building2 size={15} className={`absolute top-3 text-slate-400 ${t.dir === 'rtl' ? 'right-3.5' : 'left-3.5'}`} />
+                <select
+                  className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`}
+                  value={form.company}
+                  onChange={e => setForm(f => ({ ...f, company: e.target.value, company_division: '' }))}
+                >
+                  <option value="">{t.companyPh}</option>
+                  {COMPANIES.map(c => (
+                    <option key={c.value} value={c.value}>{lang === 'ar' ? c.ar : c.en}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="label">{t.divisionLabel} <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <Briefcase size={15} className={`absolute top-3 text-slate-400 ${t.dir === 'rtl' ? 'right-3.5' : 'left-3.5'}`} />
+                <select
+                  className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`}
+                  value={form.company_division}
+                  onChange={e => set('company_division', e.target.value)}
+                  disabled={!form.company}
+                >
+                  <option value="">{t.divisionPh}</option>
+                  {(COMPANY_DIVISIONS[form.company] || []).map(d => (
+                    <option key={d.value} value={d.value}>{lang === 'ar' ? d.ar : d.en}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
               <label className="label">{t.name} <span className="text-red-500">*</span></label>
               <input className="input" placeholder={t.namePh} value={form.requester_name} onChange={e => set('requester_name', e.target.value)} />
             </div>
@@ -406,7 +503,11 @@ function Portal({ onStaff }) {
               {form.requester_type === 'Internal' ? (
                 <select className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`} value={form.requester_department} onChange={e => set('requester_department', e.target.value)}>
                   <option value="">{t.deptPh}</option>
-                  {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                  {departments.map(d => (
+                    <option key={d.id} value={d.name}>
+                      {lang === 'ar' ? (DEPARTMENT_LABELS_AR[d.name] || d.name) : d.name}
+                    </option>
+                  ))}
                 </select>
               ) : (
                 <input className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`} placeholder={t.extPh}
@@ -455,13 +556,17 @@ function Portal({ onStaff }) {
             <div>
               <label className="label">{t.category} <span className="font-normal text-slate-400">{t.aiMayRefine}</span></label>
               <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {CATEGORIES.map(c => (
+                  <option key={c} value={c}>{lang === 'ar' ? CATEGORY_LABELS_AR[c] : c}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="label">{t.urgency} <span className="font-normal text-slate-400">{t.aiMayRefine}</span></label>
               <select className="input" value={form.priority} onChange={e => set('priority', e.target.value)}>
-                {PRIORITIES.map(p => <option key={p}>{p}</option>)}
+                {PRIORITIES.map(p => (
+                  <option key={p} value={p}>{lang === 'ar' ? PRIORITY_LABELS_AR[p] : p}</option>
+                ))}
               </select>
             </div>
           </div>
