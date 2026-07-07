@@ -1,9 +1,3 @@
-import {
- getAgents,
- addAgent,
- updateAgent,
- deleteAgent
-}
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabaseClient'
 import logo from './assets/logo.png'
