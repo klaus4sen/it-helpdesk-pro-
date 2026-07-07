@@ -377,13 +377,18 @@ function Portal({ onStaff }) {
       openTickets.forEach(t => { if (t.assigned_to) loadByAgent[t.assigned_to] = (loadByAgent[t.assigned_to] || 0) + 1 })
       const newTicket = await addTicket({
   ...form,
-  department: form.department, // مهم
+
+  // قسم المستخدم لا يتغير بالذكاء الاصطناعي
+  department: form.department,
+
   category: ai.confident ? ai.category : form.category,
   priority: ai.priority,
   tags: ai.tags,
   sentiment: ai.sentiment,
   summary: summarize(form),
-  assigned_to: routeTo(ai.category, agents, loadByAgent),
+
+  assigned_to: routeTo(form.department, agents, loadByAgent),
+
   ai_triaged: true,
 })
       notifyNewTicket(newTicket).catch(() => {})
