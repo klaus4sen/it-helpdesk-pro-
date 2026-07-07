@@ -164,10 +164,30 @@ export function matchKB({ title = '', description = '' }, limit = 3) {
 
 // Suggested assignee \u2014 picks the agent with the fewest open tickets right now
 // (a simple load-balancing router; swap for skills-based routing later).
-export function routeTo(category, agents = [], openCountByAgent = {}) {
-  const pool = agents.filter(a => a.active !== false)
+export function routeTo(department, agents = [], openCountByAgent = {}) {
+  let pool = agents.filter(a => a.active !== false)
+
+  // فلترة الموظفين حسب القسم
+  if (department) {
+    const departmentAgents = pool.filter(
+      a => a.department === department
+    )
+
+    // إذا وجد موظفين في القسم نستخدمهم
+    if (departmentAgents.length) {
+      pool = departmentAgents
+    }
+  }
+
   if (!pool.length) return ''
-  const sorted = pool.slice().sort((a, b) => (openCountByAgent[a.name] || 0) - (openCountByAgent[b.name] || 0))
+
+  // توزيع عادل على موظفي القسم
+  const sorted = pool.slice().sort(
+    (a, b) =>
+      (openCountByAgent[a.name] || 0) -
+      (openCountByAgent[b.name] || 0)
+  )
+
   return sorted[0].name
 }
 
