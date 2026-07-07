@@ -328,11 +328,16 @@ function Portal({ onStaff }) {
   const [lang, setLang] = useState('ar')
   const t = T[lang]
   const empty = {
-    requester_name: '', requester_email: '', requester_phone: '',
-    requester_type: 'Internal',
-    company: '', company_division: '', department: '',
-    title: '', description: '', category: 'Other', priority: 'Medium',
-  }
+  requester_name: '',
+  requester_email: '',
+  requester_phone: '',
+  requester_type: 'Internal',
+  company: '',
+  company_division: '',
+  department: '',
+  title: '',
+  description: '',
+}
   const [form, setForm] = useState(empty)
   const [busy, setBusy] = useState(false)
   const [submitted, setSubmitted] = useState(null)
@@ -371,15 +376,16 @@ function Portal({ onStaff }) {
       const loadByAgent = {}
       openTickets.forEach(t => { if (t.assigned_to) loadByAgent[t.assigned_to] = (loadByAgent[t.assigned_to] || 0) + 1 })
       const newTicket = await addTicket({
-        ...form,
-        category: ai.confident ? ai.category : form.category,
-        priority: ai.priority,
-        tags: ai.tags,
-        sentiment: ai.sentiment,
-        summary: summarize(form),
-        assigned_to: routeTo(ai.category, agents, loadByAgent),
-        ai_triaged: true,
-      })
+  ...form,
+  department: form.department, // مهم
+  category: ai.confident ? ai.category : form.category,
+  priority: ai.priority,
+  tags: ai.tags,
+  sentiment: ai.sentiment,
+  summary: summarize(form),
+  assigned_to: routeTo(ai.category, agents, loadByAgent),
+  ai_triaged: true,
+})
       notifyNewTicket(newTicket).catch(() => {})
       setSubmitted({ t: newTicket, ai })
     } catch (e) {
