@@ -1706,38 +1706,6 @@ function StaffAdmin({ session }) {
         </div>
 
       )}
-      {adding && (
-        <div className="card anim-slide p-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="label">Full name</label>
-              <input className="input" placeholder="e.g. Yara Saleh" value={form.name} onChange={e => set('name', e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Email (used to sign in)</label>
-              <div className="relative"><Mail size={15} className="absolute left-3.5 top-3 text-slate-400" />
-                <input className="input pl-9" type="email" placeholder="yara@company.com" value={form.email} onChange={e => set('email', e.target.value)} /></div>
-            </div>
-            <div>
-              <label className="label">Temporary password</label>
-              <div className="relative"><Lock size={15} className="absolute left-3.5 top-3 text-slate-400" />
-                <input className="input pl-9" type="text" placeholder="At least 8 characters" value={form.password} onChange={e => set('password', e.target.value)} /></div>
-            </div>
-            <div>
-              <label className="label">Role</label>
-              <select className="input" value={form.role} onChange={e => set('role', e.target.value)}>
-                <option value="Agent">Agent (IT staff)</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-          </div>
-          {err && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
-          <div className="mt-4 flex gap-2">
-            <button className="btn-primary" onClick={create}><CheckCircle2 size={16} /> Create account</button>
-            <button className="btn-ghost" onClick={() => { setAdding(false); reset() }}>Cancel</button>
-          </div>
-        </div>
-      )}
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
