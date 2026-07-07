@@ -1,3 +1,9 @@
+import {
+ getAgents,
+ addAgent,
+ updateAgent,
+ deleteAgent
+}
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabaseClient'
 import logo from './assets/logo.png'
@@ -1550,8 +1556,12 @@ function StaffAdmin({ session }) {
         <table className="w-full text-sm">
           <thead className="border-b border-slate-100 bg-slate-50">
             <tr>
-              <th className="th">Name</th><th className="th">Email</th><th className="th">Role</th>
-              <th className="th">Status</th><th className="th text-right">Actions</th>
+              <th>Name</th>
+<th>Email</th>
+<th>Role</th>
+<th>Department</th>
+<th>Status</th>
+<th>Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -1564,7 +1574,37 @@ function StaffAdmin({ session }) {
                   </div>
                 </td>
                 <td className="td text-slate-600">{a.email}</td>
-                <td className="td"><span className={`chip ${roleChip[a.role] || roleChip.Agent}`}>{a.role}</span></td>
+                <td className="td">
+  <select
+    className="input py-1 text-sm"
+    value={a.role}
+    onChange={e =>
+      updateAgent(a.id, {
+        role: e.target.value
+      }).then(onRefresh)
+    }
+  >
+    <option value="Agent">Agent</option>
+    <option value="Admin">Admin</option>
+    <option value="Super Admin">Super Admin</option>
+  </select>
+</td>
+                <td className="td">
+  <select
+    className="input py-1 text-sm"
+    value={a.department || ''}
+    onChange={e =>
+      updateAgent(a.id, {
+        department: e.target.value
+      }).then(onRefresh)
+    }
+  >
+    <option value="">No department</option>
+    <option value="IT">IT</option>
+    <option value="HR">HR</option>
+    <option value="Procurement">Procurement</option>
+  </select>
+</td>
                 <td className="td">
                   <button onClick={() => toggleActive(a)} className={`chip ${a.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-700'}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${a.active === false ? 'bg-slate-400' : 'bg-emerald-500'}`} /> {a.active === false ? 'Inactive' : 'Active'}
