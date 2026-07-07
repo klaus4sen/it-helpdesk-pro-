@@ -1460,65 +1460,252 @@ function DepartmentsAdmin() {
 function StaffAdmin({ session }) {
   const [agents, setAgents] = useState([])
   const [adding, setAdding] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'Agent' })
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    password: '', 
+    role: 'Agent' 
+  })
   const [err, setErr] = useState('')
+
   const refresh = () => getAgents().then(setAgents).catch(e => setErr(e.message))
-  useEffect(() => { refresh() }, [])
+
+  useEffect(() => { 
+    refresh() 
+  }, [])
+
+  const isSuperAdmin = session.role === 'Super Admin'
+
+  const updateStaff = async (id, patch) => {
+    if (!isSuperAdmin) return
+
+    try {
+      await updateAgent(id, patch)
+      refresh()
+    } catch (e) {
+      setErr(e.message)
+    }
+  }
+
   const used = agents.length
   const seatsLeft = Math.max(0, MAX_STAFF_SEATS + 1 - used)
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-  const reset = () => { setForm({ name: '', email: '', password: '', role: 'Agent' }); setErr('') }
+  return (
+    <div className="space-y-4">
 
   const create = async () => {
     setErr('')
+
     if (!form.name.trim() || !form.email.trim() || !form.password) {
-      setErr('Name, email, and password are required.'); return
+      setErr('Name, email, and password are required.')
+      return
     }
-    if (form.password.length < 8) { setErr('Password should be at least 8 characters.'); return }
+
+    if (form.password.length < 8) {
+      setErr('Password should be at least 8 characters.')
+      return
+    }
+
     try {
-      await addAgent({ name: form.name.trim(), email: form.email.trim(), password: form.password, role: form.role })
-      reset(); setAdding(false); refresh()
-    } catch (e) { setErr(e.message) }
+      await addAgent({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+        department: form.department
+      })
+
+      reset()
+      setAdding(false)
+      refresh()
+
+    } catch (e) {
+      setErr(e.message)
+    }
   }
 
+
   const toggleActive = async (a) => {
-    try { await updateAgent(a.id, { active: !a.active }); refresh() } catch (e) { setErr(e.message) }
+    try {
+      await updateAgent(a.id, {
+        active: !a.active
+      })
+      refresh()
+    } catch (e) {
+      setErr(e.message)
+    }
   }
+
+
   const remove = async (a) => {
-    try { await deleteAgent(a.id); refresh() } catch (e) { setErr(e.message) }
+    try {
+      await deleteAgent(a.id)
+      refresh()
+    } catch (e) {
+      setErr(e.message)
+    }
   }
+
 
   return (
     <div className="space-y-4">
+
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-extrabold text-ink">IT staff accounts</h2>
-          <p className="text-sm text-slate-500">Your plan includes the admin account plus <b>{MAX_STAFF_SEATS}</b> IT staff seats.</p>
+          <h2 className="font-display text-xl font-extrabold text-ink">
+            IT staff accounts
+          </h2>
+
+          <p className="text-sm text-slate-500">
+            Your plan includes the admin account plus <b>{MAX_STAFF_SEATS}</b> IT staff seats.
+          </p>
         </div>
-        <button onClick={() => setAdding(a => !a)} disabled={seatsLeft <= 0} className="btn-primary">
-          <UserPlus size={16} /> Add staff account
+
+
+        <button
+          onClick={() => setAdding(a => !a)}
+          disabled={seatsLeft <= 0}
+          className="btn-primary"
+        >
+          <UserPlus size={16} />
+          Add staff account
         </button>
+
       </div>
+
 
       <div className="card flex items-center gap-4 p-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Users size={18} /></div>
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+          <Users size={18}/>
+        </div>
+
+
         <div className="flex-1">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-ink">Seats used</span>
-            <span className="font-semibold text-slate-600">{used} / {MAX_STAFF_SEATS + 1}</span>
+            <span className="font-medium text-ink">
+              Seats used
+            </span>
+
+            <span className="font-semibold text-slate-600">
+              {used} / {MAX_STAFF_SEATS + 1}
+            </span>
+
           </div>
+
+
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-brand-500" style={{ width: `${(used / (MAX_STAFF_SEATS + 1)) * 100}%` }} />
+            <div
+              className="h-full rounded-full bg-brand-500"
+              style={{
+                width: `${(used / (MAX_STAFF_SEATS + 1)) * 100}%`
+              }}
+            />
           </div>
+
         </div>
-        <span className={`chip ${seatsLeft > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-          {seatsLeft > 0 ? `${seatsLeft} seat${seatsLeft === 1 ? '' : 's'} left` : 'Seat limit reached'}
+
+
+        <span className={`chip ${
+          seatsLeft > 0
+          ? 'bg-emerald-50 text-emerald-700'
+          : 'bg-red-50 text-red-700'
+        }`}>
+          {seatsLeft > 0
+            ? `${seatsLeft} seats left`
+            : 'Seat limit reached'}
         </span>
+
       </div>
 
-      {err && !adding && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
 
+
+      {err && !adding &&
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {err}
+        </p>
+      }
+
+              </select>
+
+            </div>
+
+
+
+
+            <div>
+              <label className="label">
+                Department
+              </label>
+
+
+              <select
+                className="input"
+                value={form.department}
+                onChange={e => set('department', e.target.value)}
+              >
+
+                <option value="">
+                  No department
+                </option>
+
+                <option value="IT">
+                  IT
+                </option>
+
+                <option value="HR">
+                  HR
+                </option>
+
+                <option value="Procurement">
+                  Procurement
+                </option>
+
+
+              </select>
+
+            </div>
+
+
+
+          </div>
+
+
+
+          {err &&
+            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {err}
+            </p>
+          }
+
+
+
+          <div className="mt-4 flex gap-2">
+
+            <button
+              className="btn-primary"
+              onClick={create}
+            >
+              <CheckCircle2 size={16}/>
+              Create account
+            </button>
+
+
+            <button
+              className="btn-ghost"
+              onClick={()=>{
+                setAdding(false)
+                reset()
+              }}
+            >
+              Cancel
+            </button>
+
+          </div>
+
+
+        </div>
+
+      )}
       {adding && (
         <div className="card anim-slide p-5">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -1576,14 +1763,15 @@ function StaffAdmin({ session }) {
                 <td className="td text-slate-600">{a.email}</td>
                 <td className="td">
   <select
-    className="input py-1 text-sm"
-    value={a.role}
-    onChange={e =>
-      updateAgent(a.id, {
-        role: e.target.value
-      }).then(onRefresh)
-    }
-  >
+  className="input py-1 text-sm"
+  value={a.role}
+  disabled={!isSuperAdmin}
+  onChange={e =>
+    updateStaff(a.id,{
+      role:e.target.value
+    })
+  }
+>
     <option value="Agent">Agent</option>
     <option value="Admin">Admin</option>
     <option value="Super Admin">Super Admin</option>
@@ -1591,14 +1779,15 @@ function StaffAdmin({ session }) {
 </td>
                 <td className="td">
   <select
-    className="input py-1 text-sm"
-    value={a.department || ''}
-    onChange={e =>
-      updateAgent(a.id, {
-        department: e.target.value
-      }).then(onRefresh)
-    }
-  >
+  className="input py-1 text-sm"
+  value={a.department || ''}
+  disabled={!isSuperAdmin}
+  onChange={e =>
+    updateStaff(a.id,{
+      department:e.target.value
+    })
+  }
+>
     <option value="">No department</option>
     <option value="IT">IT</option>
     <option value="HR">HR</option>
@@ -1606,7 +1795,9 @@ function StaffAdmin({ session }) {
   </select>
 </td>
                 <td className="td">
-                  <button onClick={() => toggleActive(a)} className={`chip ${a.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <button 
+  disabled={!isSuperAdmin}
+  onClick={() => toggleActive(a)} className={`chip ${a.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-700'}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${a.active === false ? 'bg-slate-400' : 'bg-emerald-500'}`} /> {a.active === false ? 'Inactive' : 'Active'}
                   </button>
                 </td>
