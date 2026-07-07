@@ -32,16 +32,16 @@ const REQUESTER_TYPES = ['Internal', 'External']
 // value saved to the database stays in English (matches the agent
 // console + AI engine), only the label shown to the employee changes.
 const CATEGORY_LABELS_AR = {
-  Hardware: '\u0623\u062c\u0647\u0632\u0629', Software: '\u0628\u0631\u0645\u062c\u064a\u0627\u062a', Network: '\u0627\u0644\u0627\u0646\u062a\u0631\u0646\u062a',
-  Account: '\u0627\u0644\u062d\u0633\u0627\u0628', Email: '\u0627\u064a\u0645\u064a\u0644', Other: '\u0623\u062e\u0631\u0649',
+  Hardware: 'أجهزة', Software: 'برمجيات', Network: 'الانترنت',
+  Account: 'الحساب', Email: 'ايميل', Other: 'أخرى',
 }
 const PRIORITY_LABELS_AR = {
-  Low: '\u0639\u0627\u062f\u064a', Medium: '\u0645\u062a\u0648\u0633\u0637', High: '\u0639\u0627\u0644\u064a', Critical: '\u0645\u0647\u0645',
+  Low: 'عادي', Medium: 'متوسط', High: 'عالي', Critical: 'مهم',
 }
 const DEPARTMENT_LABELS_AR = {
-  Finance: '\u0627\u0644\u0645\u0627\u0644\u064a\u0629', 'Human Resources': '\u0627\u0644\u0645\u0648\u0627\u0631\u062f \u0627\u0644\u0628\u0634\u0631\u064a\u0629',
-  IT: '\u062a\u0642\u0646\u064a\u0629 \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062a', Operations: '\u0627\u0644\u0639\u0645\u0644\u064a\u0627\u062a',
-  Sales: '\u0627\u0644\u0645\u0628\u064a\u0639\u0627\u062a', Other: '\u0623\u062e\u0631\u0649',
+  Finance: 'المالية', 'Human Resources': 'الموارد البشرية',
+  IT: 'تقنية المعلومات', Operations: 'العمليات',
+  Sales: 'المبيعات', Other: 'أخرى',
 }
 
 // Company / division picker for the public employee portal. Each company
@@ -83,6 +83,18 @@ const COMPANY_DIVISIONS = {
     { value: 'logistics_support', en: 'Logistics Support', ar: 'الدعم اللوجستي' },
   ],
 }
+
+// Which internal team should handle this ticket. Saved to the existing
+// `department` column on the tickets table, which the agent-console
+// Queue filter already groups/filters by (`t.department || t.category`)
+// — so once this is set, filtering "IT only" / "HR only" / "Procurement
+// only" on the dashboard just works with no other changes needed.
+const TARGET_DEPARTMENTS = [
+  { value: 'IT', en: 'IT', ar: 'تقنية المعلومات' },
+  { value: 'HR', en: 'HR', ar: 'الموارد البشرية' },
+  { value: 'Procurement', en: 'Procurement', ar: 'المشتريات' },
+]
+
 const priorityChip = {
   Low: 'bg-slate-100 text-slate-600', Medium: 'bg-blue-50 text-blue-700',
   High: 'bg-amber-50 text-amber-700', Critical: 'bg-red-50 text-red-700',
@@ -216,58 +228,62 @@ const T = {
     insideOutside: 'Are you inside or outside the company?',
     employee: 'Employee', external: 'External',
     deptLabel: 'Which department are you in?', extWhoLabel: 'Who are you / which company?',
-    deptPh: 'Select your department\u2026', extPh: 'e.g. Acme Supplies (vendor), Contractor, Visitor\u2026',
+    deptPh: 'Select your department…', extPh: 'e.g. Acme Supplies (vendor), Contractor, Visitor…',
     needHelp: 'What do you need help with?', needHelpPh: 'e.g. Laptop won\u2019t connect to WiFi',
     details: 'Details', optional: '(optional)', detailsPh: 'When did it start? Any error messages? What have you already tried?',
     mightFix: 'You might fix this now',
     category: 'Category', aiMayRefine: '(AI may refine)',
     urgency: 'Urgency',
-    submit: 'Submit request', submitting: 'Analyzing & submitting\u2026',
-    aiNote: 'AI runs on your device \u2014 nothing is sent to any third party.',
+    submit: 'Submit request', submitting: 'Analyzing & submitting…',
+    aiNote: 'AI runs on your device — nothing is sent to any third party.',
     staffBtn: 'IT staff',
     errName: 'Add your name and a short summary so we can route this.',
     errEmail: 'Add your work email so we can reach you and send updates.',
     errDept: 'Tell us which department you\u2019re in (or pick "Other" / "External").',
-    errSubmit: 'Couldn\u2019t submit your request \u2014 check your connection and try again.',
+    errSubmit: 'Couldn\u2019t submit your request — check your connection and try again.',
     received: 'Request received', thanks: 'Thanks', ticketIs: 'Your ticket is',
     weEmail: 'We\u2019ll email you updates at',
     sortedByAI: 'Sorted automatically by AI', priorityWord: 'priority', assignedTo: 'Assigned to',
     expectedReply: 'Expected first response', another: 'Submit another request',
-    companyLabel: 'Company', companyPh: 'Select the company\u2026',
-    divisionLabel: 'Division / Section', divisionPh: 'Select the division\u2026',
+    companyLabel: 'Company', companyPh: 'Select the company…',
+    divisionLabel: 'Division / Section', divisionPh: 'Select the division…',
     errCompany: 'Please select the company and its division.',
+    targetDeptLabel: 'Who should this go to?', targetDeptPh: 'Select a team…',
+    errTargetDept: 'Please pick which team this request should go to.',
   },
   ar: {
     dir: 'rtl',
-    badge: '\u062f\u0639\u0645 \u0628\u0645\u0633\u0627\u0639\u062f\u0629 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a',
-    heading: '\u0643\u064a\u0641 \u064a\u0645\u0643\u0646\u0646\u0627 \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629\u061f',
-    sub: '\u0627\u0648\u0635\u0641 \u0627\u0644\u0645\u0634\u0643\u0644\u0629 \u0648\u0633\u0646\u0642\u0648\u0645 \u0628\u062a\u0648\u062c\u064a\u0647\u0647\u0627 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627 \u0644\u0644\u062c\u0647\u0629 \u0627\u0644\u0645\u0646\u0627\u0633\u0628\u0629\u060c \u0648\u0642\u062f \u062a\u062c\u062f \u062d\u0644\u0627\u064b \u0641\u0648\u0631\u064a\u0627\u064b \u0645\u0646 \u0645\u0642\u0627\u0644 \u0645\u0642\u062a\u0631\u062d.',
-    name: '\u0627\u0633\u0645\u0643', namePh: '\u0645\u062d\u0644: \u0633\u0627\u0631\u0629 \u0627\u0644\u0645\u0637\u064a\u0631\u064a',
-    email: '\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0638\u064a\u0641\u064a', emailPh: 'you@company.com',
-    phone: '\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641', phoneOpt: '(\u0627\u062e\u062a\u064a\u0627\u0631\u064a)', phonePh: '+966 5x xxx xxxx',
-    insideOutside: '\u0647\u0644 \u0623\u0646\u062a \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629 \u0623\u0645 \u062e\u0627\u0631\u062c\u0647\u0627\u061f',
-    employee: '\u0645\u0648\u0638\u0641', external: '\u062a\u0627\u0628\u0639 \u062e\u0627\u0631\u062c\u064a',
-    deptLabel: '\u0645\u0627 \u0647\u064a \u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u064a \u062a\u0639\u0645\u0644 \u0628\u0647\u0627\u061f', extWhoLabel: '\u0645\u0646 \u0623\u0646\u062a / \u0645\u0627 \u0647\u064a \u0627\u0644\u0634\u0631\u0643\u0629\u061f',
-    deptPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0642\u0633\u0645\u2026', extPh: '\u0645\u062d\u0644: \u0645\u0648\u0631\u062f (\u0645\u0648\u0631\u062f)\u060c \u0645\u062a\u0639\u0627\u0642\u062f\u060c \u0632\u0627\u0626\u0631\u2026',
-    needHelp: '\u0628\u0645\u0627\u0630\u0627 \u062a\u062d\u062a\u0627\u062c \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629\u061f', needHelpPh: '\u0645\u062d\u0644: \u0627\u0644\u0644\u0627\u0628\u062a\u0648\u0628 \u0644\u0627 \u064a\u062a\u0635\u0644 \u0628\u0627\u0644\u0648\u0627\u064a \u0641\u0627\u064a',
-    details: '\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644', optional: '(\u0627\u062e\u062a\u064a\u0627\u0631\u064a)', detailsPh: '\u0645\u062a\u0649 \u0628\u062f\u0623\u062a \u0627\u0644\u0645\u0634\u0643\u0644\u0629\u061f \u0647\u0644 \u0647\u0646\u0627\u0643 \u0631\u0633\u0627\u0644\u0629 \u062e\u0637\u0623\u061f \u0645\u0627\u0630\u0627 \u062c\u0631\u0628\u062a \u0633\u0627\u0628\u0642\u0627\u064b\u061f',
-    mightFix: '\u0642\u062f \u062a\u062a\u0645\u0643\u0646 \u0645\u0646 \u062d\u0644 \u0647\u0630\u0627 \u0627\u0644\u0622\u0646',
-    category: '\u0627\u0644\u0641\u0626\u0629', aiMayRefine: '(\u0642\u062f \u064a\u0639\u062f\u0644\u0647\u0627 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a)',
-    urgency: '\u0627\u0644\u0623\u0648\u0644\u0648\u064a\u0629',
-    submit: '\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0637\u0644\u0628', submitting: '\u062c\u0627\u0631\u064d \u0627\u0644\u062a\u062d\u0644\u064a\u0644 \u0648\u0627\u0644\u0625\u0631\u0633\u0627\u0644\u2026',
-    aiNote: '\u064a\u0639\u0645\u0644 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0639\u0644\u0649 \u062c\u0647\u0627\u0632\u0643 \u2014 \u0644\u0627 \u064a\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0623\u064a \u0634\u064a\u0621 \u0644\u0623\u064a \u0637\u0631\u0641 \u062b\u0627\u0644\u062b.',
-    staffBtn: '\u0645\u0648\u0638\u0641\u0648 \u0627\u0644\u062a\u0642\u0646\u064a\u0629',
-    errName: '\u0623\u0636\u0641 \u0627\u0633\u0645\u0643 \u0648\u0648\u0635\u0641\u0627\u064b \u0645\u0648\u062c\u0632\u0627\u064b \u062d\u062a\u0649 \u0646\u0633\u062a\u0637\u064a\u0639 \u062a\u0648\u062c\u064a\u0647 \u0627\u0644\u0637\u0644\u0628.',
-    errEmail: '\u0623\u0636\u0641 \u0628\u0631\u064a\u062f\u0643 \u0627\u0644\u0648\u0638\u064a\u0641\u064a \u062d\u062a\u0649 \u0646\u062a\u0645\u0643\u0646 \u0645\u0646 \u0627\u0644\u062a\u0648\u0627\u0635\u0644 \u0645\u0639\u0643 \u0648\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u062d\u062f\u064a\u0642\u0627\u062a.',
-    errDept: '\u0623\u062e\u0628\u0631\u0646\u0627 \u0628\u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062a\u064a \u062a\u0639\u0645\u0644 \u0628\u0647\u0627 (\u0623\u0648 \u0627\u062e\u062a\u0631 "\u0623\u062e\u0631\u0649" / "\u062e\u0627\u0631\u062c\u064a").',
-    errSubmit: '\u062a\u0639\u0630\u0631 \u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628\u0643 \u2014 \u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0648\u062c\u0631\u0628 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.',
-    received: '\u062a\u0645 \u0627\u0633\u0644\u0627\u0645 \u0627\u0644\u0637\u0644\u0628', thanks: '\u0634\u0643\u0631\u0627\u064b', ticketIs: '\u0631\u0642\u0645 \u062a\u0630\u0643\u0631\u062a\u0643 \u0647\u0648',
-    weEmail: '\u0633\u0646\u0631\u0633\u0644 \u0644\u0643 \u0627\u0644\u062a\u062d\u062f\u064a\u062b\u0627\u062a \u0639\u0644\u0649 \u0627\u0644\u0628\u0631\u064a\u062f',
-    sortedByAI: '\u062a\u0645 \u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0628\u0648\u0627\u0633\u0637\u0629 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a', priorityWord: '\u0627\u0644\u0623\u0648\u0644\u0648\u064a\u0629', assignedTo: '\u0645\u062e\u0635\u0651\u0635 \u0644\u0640',
-    expectedReply: '\u0627\u0644\u0631\u062f \u0627\u0644\u0645\u062a\u0648\u0642\u0639', another: '\u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0622\u062e\u0631',
-    companyLabel: '\u0627\u0644\u0634\u0631\u0643\u0629', companyPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0634\u0631\u0643\u0629\u2026',
-    divisionLabel: '\u0627\u0644\u0642\u0633\u0645', divisionPh: '\u0627\u062e\u062a\u0631 \u0627\u0644\u0642\u0633\u0645\u2026',
-    errCompany: '\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0627\u0644\u0634\u0631\u0643\u0629 \u0648\u0627\u0644\u0642\u0633\u0645 \u0627\u0644\u062a\u0627\u0628\u0639 \u0644\u0647\u0627.',
+    badge: 'دعم بمساعدة الذكاء الاصطناعي',
+    heading: 'كيف يمكننا المساعدة؟',
+    sub: 'اوصف المشكلة وسنقوم بتوجيهها تلقائيًا للجهة المناسبة، وقد تجد حلاً فورياً من مقال مقترح.',
+    name: 'اسمك', namePh: 'محل: سارة المطيري',
+    email: 'البريد الوظيفي', emailPh: 'you@company.com',
+    phone: 'رقم الهاتف', phoneOpt: '(اختياري)', phonePh: '+966 5x xxx xxxx',
+    insideOutside: 'هل أنت داخل الشركة أم خارجها؟',
+    employee: 'موظف', external: 'تابع خارجي',
+    deptLabel: 'ما هي الإدارة التي تعمل بها؟', extWhoLabel: 'من أنت / ما هي الشركة؟',
+    deptPh: 'اختر القسم…', extPh: 'محل: مورد (مورد)، متعاقد، زائر…',
+    needHelp: 'بماذا تحتاج المساعدة؟', needHelpPh: 'محل: اللابتوب لا يتصل بالواي فاي',
+    details: 'التفاصيل', optional: '(اختياري)', detailsPh: 'متى بدأت المشكلة؟ هل هناك رسالة خطأ؟ ماذا جربت سابقاً؟',
+    mightFix: 'قد تتمكن من حل هذا الآن',
+    category: 'الفئة', aiMayRefine: '(قد يعدلها الذكاء الاصطناعي)',
+    urgency: 'الأولوية',
+    submit: 'إرسال الطلب', submitting: 'جارٍ التحليل والإرسال…',
+    aiNote: 'يعمل الذكاء الاصطناعي على جهازك — لا يتم إرسال أي شيء لأي طرف ثالث.',
+    staffBtn: 'موظفو التقنية',
+    errName: 'أضف اسمك ووصفاً موجزاً حتى نستطيع توجيه الطلب.',
+    errEmail: 'أضف بريدك الوظيفي حتى نتمكن من التواصل معك وإرسال التحديثات.',
+    errDept: 'أخبرنا بالإدارة التي تعمل بها (أو اختر "أخرى" / "خارجي").',
+    errSubmit: 'تعذر إرسال طلبك — تحقق من الاتصال وجرب مرة أخرى.',
+    received: 'تم استلام الطلب', thanks: 'شكراً', ticketIs: 'رقم تذكرتك هو',
+    weEmail: 'سنرسل لك التحديثات على البريد',
+    sortedByAI: 'تم الترتيب تلقائياً بواسطة الذكاء الاصطناعي', priorityWord: 'الأولوية', assignedTo: 'مخصّص لـ',
+    expectedReply: 'الرد المتوقع', another: 'إرسال طلب آخر',
+    companyLabel: 'الشركة', companyPh: 'اختر الشركة…',
+    divisionLabel: 'القسم', divisionPh: 'اختر القسم…',
+    errCompany: 'يرجى اختيار الشركة والقسم التابع لها.',
+    targetDeptLabel: 'الطلب موجّه لمن؟', targetDeptPh: 'اختر الجهة المسؤولة…',
+    errTargetDept: 'يرجى تحديد الجهة المسؤولة عن هذا الطلب.',
   },
 }
 
@@ -307,19 +323,14 @@ export default function App() {
 
 /* =====================================================================
    EMPLOYEE PORTAL  (public) — self-service KB + AI auto-triage
-   Captures: department, internal/external requester type, and a
-   phone number alongside email. Name, email, inside/outside,
-   department, and "what do you need help with" are all required;
-   phone, category, and urgency stay optional.
 ===================================================================== */
 function Portal({ onStaff }) {
-  const [lang, setLang] = useState('en')
+  const [lang, setLang] = useState('ar')
   const t = T[lang]
-  const [departments, setDepartments] = useState([])
   const empty = {
     requester_name: '', requester_email: '', requester_phone: '',
-    requester_type: 'Internal', requester_department: '',
-    company: '', company_division: '',
+    requester_type: 'Internal',
+    company: '', company_division: '', department: '',
     title: '', description: '', category: 'Other', priority: 'Medium',
   }
   const [form, setForm] = useState(empty)
@@ -328,10 +339,6 @@ function Portal({ onStaff }) {
   const [err, setErr] = useState('')
   const [openArticle, setOpenArticle] = useState(null)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-  useEffect(() => {
-    getDepartments().then(setDepartments).catch(() => setErr('Couldn\u2019t load departments \u2014 check your connection and try again.'))
-  }, [])
 
   const suggestions = useMemo(
     () => matchKB({ title: form.title, description: form.description }, 2),
@@ -344,8 +351,16 @@ function Portal({ onStaff }) {
       setErr(t.errName)
       return
     }
+    if (!form.requester_email) {
+      setErr(t.errEmail)
+      return
+    }
     if (!form.company || !form.company_division) {
       setErr(t.errCompany)
+      return
+    }
+    if (!form.department) {
+      setErr(t.errTargetDept)
       return
     }
     setBusy(true)
@@ -365,7 +380,7 @@ function Portal({ onStaff }) {
         assigned_to: routeTo(ai.category, agents, loadByAgent),
         ai_triaged: true,
       })
-      notifyNewTicket(newTicket).catch(() => {}) // best-effort; never blocks submission
+      notifyNewTicket(newTicket).catch(() => {})
       setSubmitted({ t: newTicket, ai })
     } catch (e) {
       setErr(e.message || t.errSubmit)
@@ -451,6 +466,23 @@ function Portal({ onStaff }) {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <label className="label">{t.targetDeptLabel} <span className="text-red-500">*</span></label>
+            <div className="relative">
+              <Users size={15} className={`absolute top-3 text-slate-400 ${t.dir === 'rtl' ? 'right-3.5' : 'left-3.5'}`} />
+              <select
+                className={`input ${t.dir === 'rtl' ? 'pr-9' : 'pl-9'}`}
+                value={form.department}
+                onChange={e => set('department', e.target.value)}
+              >
+                <option value="">{t.targetDeptPh}</option>
+                {TARGET_DEPARTMENTS.map(d => (
+                  <option key={d.value} value={d.value}>{lang === 'ar' ? d.ar : d.en}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -573,7 +605,6 @@ function Shell({ children, onStaff, lang, setLang }) {
              <div className="font-display text-[15px] font-bold text-ink">Helpdisk</div>
              <div className="text-[11px] text-slate-400">IT Support Portal</div>
             </div>
-
           </div>
           <div className="flex items-center gap-2">
             {lang && setLang && (
@@ -591,8 +622,7 @@ function Shell({ children, onStaff, lang, setLang }) {
 }
 
 /* =====================================================================
-   STAFF LOGIN — authenticates against real agent accounts (admin +
-   up to 3 IT staff), not a single hardcoded login.
+   STAFF LOGIN
 ===================================================================== */
 function Login({ onBack, onLogin }) {
   const [email, setEmail] = useState(''); const [p, setP] = useState('')
@@ -606,7 +636,7 @@ function Login({ onBack, onLogin }) {
       const profile = await signIn(email.trim(), p)
       onLogin(profile)
     } catch (e) {
-      setErr(e.message || 'Couldn\u2019t reach the server \u2014 check your connection and try again.')
+      setErr(e.message || 'Couldn\u2019t reach the server — check your connection and try again.')
     } finally {
       setBusy(false)
     }
@@ -649,9 +679,7 @@ function Login({ onBack, onLogin }) {
 }
 
 /* =====================================================================
-   AGENT CONSOLE — Faveo-style persistent sidebar shell with
-   Dashboard / Tickets / Departments / Staff / Knowledge base sections.
-   Admin-only sections (Departments, Staff) are hidden from Agents.
+   AGENT CONSOLE
 ===================================================================== */
 function Console({ session, onLogout }) {
   const [tickets, setTickets] = useState([])
@@ -664,7 +692,7 @@ function Console({ session, onLogout }) {
     setLoadErr('')
     getTickets()
       .then(setTickets)
-      .catch(e => setLoadErr(e.message || 'Couldn\u2019t load tickets \u2014 check your Supabase connection.'))
+      .catch(e => setLoadErr(e.message || 'Couldn\u2019t load tickets — check your Supabase connection.'))
       .finally(() => setLoading(false))
   }
   useEffect(() => { refresh() }, [])
@@ -693,7 +721,6 @@ function Console({ session, onLogout }) {
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-      {/* ---------- Sidebar ---------- */}
       <aside className="hidden w-60 shrink-0 flex-col bg-navy-800 shadow-nav lg:flex">
         <div className="flex items-center gap-2.5 px-5 py-5">
           <img src={logo} alt="Helpdisk logo" className="h-9 w-9 rounded-lg object-cover" />
@@ -737,7 +764,6 @@ function Console({ session, onLogout }) {
         </div>
       </aside>
 
-      {/* ---------- Main column ---------- */}
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:px-6">
           <div className="flex items-center gap-2 lg:hidden">
@@ -754,7 +780,6 @@ function Console({ session, onLogout }) {
           </div>
         </header>
 
-        {/* mobile nav tabs */}
         <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 lg:hidden">
           {NAV.map(n => (
             <button key={n.id} onClick={() => setTab(n.id)}
@@ -794,7 +819,7 @@ function Console({ session, onLogout }) {
   )
 }
 
-/* ---------------- DASHBOARD (Faveo-style widgets) ---------------- */
+/* ---------------- DASHBOARD ---------------- */
 function DashboardHome({ tickets, session, onOpen, goTickets }) {
   const [teamCount, setTeamCount] = useState(null)
   useEffect(() => {
@@ -880,7 +905,7 @@ function DashboardHome({ tickets, session, onOpen, goTickets }) {
         <div className="card p-5">
           <h3 className="mb-1 font-display text-sm font-bold text-ink">Team</h3>
           <p className="mb-3 text-xs text-slate-400">Active IT staff seats in use.</p>
-          <div className="font-display text-3xl font-extrabold text-ink">{teamCount === null ? '\u2014' : teamCount}</div>
+          <div className="font-display text-3xl font-extrabold text-ink">{teamCount === null ? '—' : teamCount}</div>
         </div>
       </div>
 
@@ -950,7 +975,7 @@ function MetricCard({ label, value, sub, tone, icon: Icon, spine }) {
   )
 }
 
-/* ---------------- QUEUE (Faveo-style ticket grid) ---------------- */
+/* ---------------- QUEUE ---------------- */
 function Queue({ tickets, onOpen, onRefresh, initialFilter = 'All', session }) {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState(initialFilter)
@@ -1197,7 +1222,7 @@ function Insights({ tickets }) {
     if (cs[0]) firstResp.push((new Date(cs[0].created_at) - new Date(t.created_at)) / 3600000)
   }
   const avgFirstMins = firstResp.length ? Math.round((firstResp.reduce((a, b) => a + b, 0) / firstResp.length) * 60) : null
-  const avgFirstLabel = avgFirstMins === null ? '\u2014'
+  const avgFirstLabel = avgFirstMins === null ? '—'
     : avgFirstMins < 60 ? `${avgFirstMins}m`
     : `${Math.round(avgFirstMins / 60)}h`
 
@@ -1291,7 +1316,7 @@ function Insights({ tickets }) {
   )
 }
 
-/* ---------------- KNOWLEDGE BASE (read view for agents) ---------------- */
+/* ---------------- KNOWLEDGE BASE ---------------- */
 function KnowledgeBaseAdmin() {
   const [q, setQ] = useState('')
   const list = KB.filter(a => `${a.title} ${a.summary} ${a.category}`.toLowerCase().includes(q.toLowerCase()))
@@ -1324,8 +1349,7 @@ function KnowledgeBaseAdmin() {
 }
 
 /* =====================================================================
-   DEPARTMENTS ADMIN — drives the dropdown employees pick from when
-   filing a ticket ("what department he is").
+   DEPARTMENTS ADMIN
 ===================================================================== */
 function DepartmentsAdmin() {
   const [list, setList] = useState([])
@@ -1390,7 +1414,7 @@ function DepartmentsAdmin() {
             {list.map(d => (
               <tr key={d.id} className="transition hover:bg-slate-50/60">
                 <td className="td font-semibold text-ink">{d.name}</td>
-                <td className="td text-slate-500">{d.description || '\u2014'}</td>
+                <td className="td text-slate-500">{d.description || '—'}</td>
                 <td className="td text-right">
                   <button onClick={() => remove(d.id)} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button>
                 </td>
@@ -1404,8 +1428,7 @@ function DepartmentsAdmin() {
 }
 
 /* =====================================================================
-   STAFF ADMIN — the admin can create up to MAX_STAFF_SEATS (3) IT
-   staff accounts in addition to their own admin login.
+   STAFF ADMIN
 ===================================================================== */
 function StaffAdmin({ session }) {
   const [agents, setAgents] = useState([])
@@ -1540,11 +1563,7 @@ function StaffAdmin({ session }) {
 }
 
 /* =====================================================================
-   TICKET DETAIL — AI panel, suggested reply, SLA, activity.
-   Shows full requester contact card (email/phone/type/department),
-   assigns from real staff accounts, and supports internal notes
-   (visible to agents only) vs. public replies — Faveo-style.
-   Public replies trigger an email to the requester.
+   TICKET DETAIL
 ===================================================================== */
 function Detail({ ticket, onClose, onChanged, onDeleted, agent }) {
   const [t, setT] = useState(ticket)
@@ -1585,7 +1604,7 @@ function Detail({ ticket, onClose, onChanged, onDeleted, agent }) {
       setNote('')
       const fresh = await getComments(t.id)
       setComments(fresh)
-      if (!asInternal) notifyTicketReply(t, body, agent).catch(() => {}) // best-effort; never blocks the reply
+      if (!asInternal) notifyTicketReply(t, body, agent).catch(() => {})
     } catch (e) { setErr(e.message || 'Couldn\u2019t post that reply.') }
   }
   const suggest = () => {
@@ -1647,7 +1666,6 @@ function Detail({ ticket, onClose, onChanged, onDeleted, agent }) {
             </div>
           </div>
 
-          {/* Requester contact card — name, email/phone, internal vs external, department */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="flex items-start gap-3">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100 font-bold text-brand-700">{initials(t.requester_name)}</div>
