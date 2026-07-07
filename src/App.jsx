@@ -1487,9 +1487,39 @@ function StaffAdmin({ session }) {
     }
   }
 
-  const used = agents.length
-  const seatsLeft = Math.max(0, MAX_STAFF_SEATS + 1 - used)
 
+  // 👇 هنا مكان create
+  const create = async () => {
+    setErr('')
+
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      setErr('Name, email, and password are required.')
+      return
+    }
+
+    if (form.password.length < 8) {
+      setErr('Password should be at least 8 characters.')
+      return
+    }
+
+    try {
+      await addAgent({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role
+      })
+
+      setAdding(false)
+      refresh()
+
+    } catch(e) {
+      setErr(e.message)
+    }
+  }
+
+
+  // 👇 بعد كل الدوال يبدأ return
   return (
     <div className="space-y-4">
 
