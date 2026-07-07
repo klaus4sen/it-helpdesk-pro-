@@ -714,8 +714,9 @@ function Console({ session, onLogout }) {
   }
   useEffect(() => { refresh() }, [])
   const onChanged = (updated) => { refresh(); if (updated) setActive(updated) }
-  const isAdmin = session.role === 'Admin'
-
+  const isAdmin =
+  session.role === 'Admin' ||
+  session.role === 'Super Admin'
   const counts = {
     inbox: tickets.filter(t => !['Resolved', 'Closed'].includes(t.status)).length,
     mine: tickets.filter(t => t.assigned_to === session.name && !['Resolved', 'Closed'].includes(t.status)).length,
@@ -1461,11 +1462,12 @@ function StaffAdmin({ session }) {
   const [agents, setAgents] = useState([])
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ 
-    name: '', 
-    email: '', 
-    password: '', 
-    role: 'Agent' 
-  })
+  name: '', 
+  email: '', 
+  password: '', 
+  role: 'Agent',
+  department: ''
+})
   const [err, setErr] = useState('')
 
   const refresh = () => getAgents().then(setAgents).catch(e => setErr(e.message))
@@ -1477,83 +1479,51 @@ function StaffAdmin({ session }) {
   const isSuperAdmin = session.role === 'Super Admin'
 
   const updateStaff = async (id, patch) => {
-    if (!isSuperAdmin) return
+  if (!isSuperAdmin) return
 
-    try {
-      await updateAgent(id, patch)
-      refresh()
-    } catch (e) {
-      setErr(e.message)
-    }
+  try {
+    await updateAgent(id, patch)
+    refresh()
+  } catch (e) {
+    setErr(e.message)
+  }
+}
+
+
+const create = async () => {
+  setErr('')
+
+  if (!form.name.trim() || !form.email.trim() || !form.password) {
+    setErr('Name, email, and password are required.')
+    return
   }
 
-
-  // 👇 هنا مكان create
-  const create = async () => {
-    setErr('')
-
-    if (!form.name.trim() || !form.email.trim() || !form.password) {
-      setErr('Name, email, and password are required.')
-      return
-    }
-
-    if (form.password.length < 8) {
-      setErr('Password should be at least 8 characters.')
-      return
-    }
-
-    try {
-      await addAgent({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        role: form.role
-      })
-
-      setAdding(false)
-      refresh()
-
-    } catch(e) {
-      setErr(e.message)
-    }
+  if (form.password.length < 8) {
+    setErr('Password should be at least 8 characters.')
+    return
   }
 
+  try {
+    await addAgent({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role,
+      department: form.department
+    })
 
-  // 👇 بعد كل الدوال يبدأ return
-  return (
-    <div className="space-y-4">
+    reset()
+    setAdding(false)
+    refresh()
 
-  const create = async () => {
-    setErr('')
-
-    if (!form.name.trim() || !form.email.trim() || !form.password) {
-      setErr('Name, email, and password are required.')
-      return
-    }
-
-    if (form.password.length < 8) {
-      setErr('Password should be at least 8 characters.')
-      return
-    }
-
-    try {
-      await addAgent({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        role: form.role,
-        department: form.department
-      })
-
-      reset()
-      setAdding(false)
-      refresh()
-
-    } catch (e) {
-      setErr(e.message)
-    }
+  } catch (e) {
+    setErr(e.message)
   }
+}
 
+
+return (
+  <div className="space-y-4">
 
   const toggleActive = async (a) => {
     try {
