@@ -708,9 +708,11 @@ function Console({ session, onLogout }) {
   }
   useEffect(() => { refresh() }, [])
   const onChanged = (updated) => { refresh(); if (updated) setActive(updated) }
-  const isAdmin =
-  session.role === 'Admin' ||
-  session.role === 'Super Admin'
+  const isSuperAdmin = session?.role === 'Super Admin'
+
+const isAdmin =
+  session?.role === 'Admin' ||
+  isSuperAdmin
   const counts = {
     inbox: tickets.filter(t => !['Resolved', 'Closed'].includes(t.status)).length,
     mine: tickets.filter(t => t.assigned_to === session.name && !['Resolved', 'Closed'].includes(t.status)).length,
