@@ -987,8 +987,19 @@ function Queue({ tickets, onOpen, onRefresh, initialFilter = 'All', session }) {
   const [bulkBusy, setBulkBusy] = useState(false)
   const [bulkErr, setBulkErr] = useState('')
   const [agents, setAgents] = useState([])
+  const [departmentOptions, setDepartmentOptions] = useState(['All'])
   useEffect(() => { setFilter(initialFilter) }, [initialFilter])
-  useEffect(() => { getAgents().then(setAgents).catch(() => setAgents([])) }, [])
+  useEffect(() => {
+  getAgents().then(setAgents).catch(() => setAgents([]))
+
+  getDepartments()
+    .then(rows => {
+      setDepartmentOptions(['All', ...rows.map(d => d.name)])
+    })
+    .catch(() => {
+      setDepartmentOptions(['All'])
+    })
+}, [])
 
   const counts = {
     All: tickets.length,
@@ -1002,7 +1013,6 @@ function Queue({ tickets, onOpen, onRefresh, initialFilter = 'All', session }) {
   const unassignedOpen = tickets.filter(t => !t.assigned_to && !['Resolved', 'Closed'].includes(t.status)).length
   const resolvedToday = tickets.filter(t => t.resolved_at && (Date.now() - new Date(t.resolved_at)) < 86400000).length
 
-  const departments = ['All', ...new Set(tickets.map(t => t.department || t.category).filter(Boolean))]
   const assignees = ['All', 'Unassigned', ...new Set(tickets.map(t => t.assigned_to).filter(Boolean))]
 
   const matchesSpecialFilter = (t) => {
@@ -1082,7 +1092,7 @@ function Queue({ tickets, onOpen, onRefresh, initialFilter = 'All', session }) {
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select className="input w-auto shrink-0 py-2 text-[13px]" value={deptFilter} onChange={e => setDeptFilter(e.target.value)}>
-          {departments.map(d => <option key={d} value={d}>{d === 'All' ? 'All departments' : d}</option>)}
+          {departmentOptions.map(d => <option key={d} value={d}>{d === 'All' ? 'All departments' : d}</option>)}
         </select>
         <select className="input w-auto shrink-0 py-2 text-[13px]" value={agentFilter} onChange={e => setAgentFilter(e.target.value)}>
           {assignees.map(a => <option key={a} value={a}>{a === 'All' ? 'All assignees' : a}</option>)}
