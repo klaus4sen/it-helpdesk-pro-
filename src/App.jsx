@@ -1516,31 +1516,37 @@ const create = async () => {
 }
 
 
+const toggleActive = async (a) => {
+  if (!isSuperAdmin) return
+
+  try {
+    await updateAgent(a.id, {
+      active: !a.active
+    })
+
+    refresh()
+
+  } catch (e) {
+    setErr(e.message)
+  }
+}
+
+
+const remove = async (a) => {
+  if (!isSuperAdmin) return
+
+  try {
+    await deleteAgent(a.id)
+    refresh()
+
+  } catch (e) {
+    setErr(e.message)
+  }
+}
+
+
 return (
   <div className="space-y-4">
-
-  const toggleActive = async (a) => {
-    try {
-      await updateAgent(a.id, {
-        active: !a.active
-      })
-      refresh()
-    } catch (e) {
-      setErr(e.message)
-    }
-  }
-
-
-  const remove = async (a) => {
-    try {
-      await deleteAgent(a.id)
-      refresh()
-    } catch (e) {
-      setErr(e.message)
-    }
-  }
-
-
   return (
     <div className="space-y-4">
 
