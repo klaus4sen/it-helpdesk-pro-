@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabaseClient'
 import logo from './assets/logo.png'
@@ -710,9 +711,13 @@ function Console({ session, onLogout }) {
   const onChanged = (updated) => { refresh(); if (updated) setActive(updated) }
   const isSuperAdmin = session?.role === 'Super Admin'
 
-const isAdmin =
-  session?.role === 'Admin' ||
-  isSuperAdmin
+  const isAdmin =
+    session?.role === 'Admin' ||
+    isSuperAdmin
+    console.log('session =', session)
+    console.log('role =', session?.role)
+    console.log('isSuperAdmin =', isSuperAdmin)
+    console.log('isAdmin =', isAdmin)
   const counts = {
     inbox: tickets.filter(t => !['Resolved', 'Closed'].includes(t.status)).length,
     mine: tickets.filter(t => t.assigned_to === session.name && !['Resolved', 'Closed'].includes(t.status)).length,
