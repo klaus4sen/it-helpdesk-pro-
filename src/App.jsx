@@ -709,15 +709,10 @@ function Console({ session, onLogout }) {
   }
   useEffect(() => { refresh() }, [])
   const onChanged = (updated) => { refresh(); if (updated) setActive(updated) }
-  const isSuperAdmin = session?.role === 'Super Admin'
 
-  const isAdmin =
-    session?.role === 'Admin' ||
-    isSuperAdmin
-    console.log('session =', session)
-    console.log('role =', session?.role)
-    console.log('isSuperAdmin =', isSuperAdmin)
-    console.log('isAdmin =', isAdmin)
+  const isSuperAdmin = session?.role === 'Super Admin'
+  const isAdmin = session?.role === 'Admin' || isSuperAdmin
+
   const counts = {
     inbox: tickets.filter(t => !['Resolved', 'Closed'].includes(t.status)).length,
     mine: tickets.filter(t => t.assigned_to === session.name && !['Resolved', 'Closed'].includes(t.status)).length,
@@ -1459,328 +1454,210 @@ function DepartmentsAdmin() {
 /* =====================================================================
    STAFF ADMIN
 ===================================================================== */
+/* =====================================================================
+   STAFF ADMIN
+   - Super Admin: full control, EXCEPT cannot edit/delete another
+     Super Admin account (including their own role, to avoid lockouts).
+   - Admin: can only change the "department" field on existing accounts.
+   - Agent: never reaches this page (hidden by the sidebar's isAdmin check).
+===================================================================== */
 function StaffAdmin({ session }) {
   const [agents, setAgents] = useState([])
   const [adding, setAdding] = useState(false)
-  const [form, setForm] = useState({ 
-  name: '', 
-  email: '', 
-  password: '', 
-  role: 'Agent',
-  department: ''
-})
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'Agent', department: '' })
   const [err, setErr] = useState('')
-
   const refresh = () => getAgents().then(setAgents).catch(e => setErr(e.message))
-
-  useEffect(() => { 
-    refresh() 
-  }, [])
+  useEffect(() => { refresh() }, [])
 
   const isSuperAdmin = session.role === 'Super Admin'
+  const isAdminOnly = session.role === 'Admin'
+  const canEditDepartment = isSuperAdmin || isAdminOnly
+  const used = agents.length
+  const seatsLeft = Math.max(0, MAX_STAFF_SEATS + 1 - used)
 
-  const updateStaff = async (id, patch) => {
-  if (!isSuperAdmin) return
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const reset = () => { setForm({ name: '', email: '', password: '', role: 'Agent', department: '' }); setErr('') }
 
-  try {
-    await updateAgent(id, patch)
-    refresh()
-  } catch (e) {
-    setErr(e.message)
-  }
-}
+  // Super Admin can fully manage any account EXCEPT another Super Admin's
+  // (protects against accidental lockouts / mutual takedown).
+  const canFullyManage = (a) => isSuperAdmin && a.role !== 'Super Admin'
 
-
-const create = async () => {
-  setErr('')
-
-  if (!form.name.trim() || !form.email.trim() || !form.password) {
-    setErr('Name, email, and password are required.')
-    return
-  }
-
-  if (form.password.length < 8) {
-    setErr('Password should be at least 8 characters.')
-    return
+  const updateStaff = async (a, patch) => {
+    setErr('')
+    try {
+      await updateAgent(a.id, patch)
+      refresh()
+    } catch (e) { setErr(e.message) }
   }
 
-  try {
-    await addAgent({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      password: form.password,
-      role: form.role,
-      department: form.department
-    })
-
-    reset()
-    setAdding(false)
-    refresh()
-
-  } catch (e) {
-    setErr(e.message)
+  const create = async () => {
+    setErr('')
+    if (!isSuperAdmin) return
+    if (!form.name.trim() || !form.email.trim() || !form.password) {
+      setErr('Name, email, and password are required.'); return
+    }
+    if (form.password.length < 8) { setErr('Password should be at least 8 characters.'); return }
+    try {
+      await addAgent({ name: form.name.trim(), email: form.email.trim(), password: form.password, role: form.role, department: form.department })
+      reset(); setAdding(false); refresh()
+    } catch (e) { setErr(e.message) }
   }
-}
 
-
-const toggleActive = async (a) => {
-  if (!isSuperAdmin) return
-
-  try {
-    await updateAgent(a.id, {
-      active: !a.active
-    })
-
-    refresh()
-
-  } catch (e) {
-    setErr(e.message)
+  const toggleActive = (a) => { if (canFullyManage(a)) updateStaff(a, { active: !a.active }) }
+  const changeRole = (a, role) => { if (canFullyManage(a)) updateStaff(a, { role }) }
+  const changeDepartment = (a, department) => { if (canEditDepartment) updateStaff(a, { department }) }
+  const remove = async (a) => {
+    if (!canFullyManage(a)) return
+    try { await deleteAgent(a.id); refresh() } catch (e) { setErr(e.message) }
   }
-}
 
-
-const remove = async (a) => {
-  if (!isSuperAdmin) return
-
-  try {
-    await deleteAgent(a.id)
-    refresh()
-
-  } catch (e) {
-    setErr(e.message)
-  }
-}
-
-
-return (
-  <div className="space-y-4">
   return (
     <div className="space-y-4">
-
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-extrabold text-ink">
-            IT staff accounts
-          </h2>
-
+          <h2 className="font-display text-xl font-extrabold text-ink">IT staff accounts</h2>
           <p className="text-sm text-slate-500">
-            Your plan includes the admin account plus <b>{MAX_STAFF_SEATS}</b> IT staff seats.
+            {isSuperAdmin
+              ? <>Your plan includes the admin account plus <b>{MAX_STAFF_SEATS}</b> IT staff seats.</>
+              : 'You can update which department each staff member belongs to.'}
           </p>
         </div>
-
-
-        <button
-          onClick={() => setAdding(a => !a)}
-          disabled={seatsLeft <= 0}
-          className="btn-primary"
-        >
-          <UserPlus size={16} />
-          Add staff account
-        </button>
-
+        {isSuperAdmin && (
+          <button onClick={() => setAdding(a => !a)} disabled={seatsLeft <= 0} className="btn-primary">
+            <UserPlus size={16} /> Add staff account
+          </button>
+        )}
       </div>
 
-
-      <div className="card flex items-center gap-4 p-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-          <Users size={18}/>
-        </div>
-
-
-        <div className="flex-1">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-ink">
-              Seats used
-            </span>
-
-            <span className="font-semibold text-slate-600">
-              {used} / {MAX_STAFF_SEATS + 1}
-            </span>
-
-          </div>
-
-
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-brand-500"
-              style={{
-                width: `${(used / (MAX_STAFF_SEATS + 1)) * 100}%`
-              }}
-            />
-          </div>
-
-        </div>
-
-
-        <span className={`chip ${
-          seatsLeft > 0
-          ? 'bg-emerald-50 text-emerald-700'
-          : 'bg-red-50 text-red-700'
-        }`}>
-          {seatsLeft > 0
-            ? `${seatsLeft} seats left`
-            : 'Seat limit reached'}
-        </span>
-
-      </div>
-
-
-
-      {err && !adding &&
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {err}
-        </p>
-      }
-
-              </select>
-
+      {isSuperAdmin && (
+        <div className="card flex items-center gap-4 p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><Users size={18} /></div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-ink">Seats used</span>
+              <span className="font-semibold text-slate-600">{used} / {MAX_STAFF_SEATS + 1}</span>
             </div>
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full rounded-full bg-brand-500" style={{ width: `${(used / (MAX_STAFF_SEATS + 1)) * 100}%` }} />
+            </div>
+          </div>
+          <span className={`chip ${seatsLeft > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+            {seatsLeft > 0 ? `${seatsLeft} seat${seatsLeft === 1 ? '' : 's'} left` : 'Seat limit reached'}
+          </span>
+        </div>
+      )}
 
+      {err && !adding && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
 
-
-
+      {isSuperAdmin && adding && (
+        <div className="card anim-slide p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="label">
-                Department
-              </label>
-
-
-              <select
-                className="input"
-                value={form.department}
-                onChange={e => set('department', e.target.value)}
-              >
-
-                <option value="">
-                  No department
-                </option>
-
-                <option value="IT">
-                  IT
-                </option>
-
-                <option value="HR">
-                  HR
-                </option>
-
-                <option value="Procurement">
-                  Procurement
-                </option>
-
-
-              </select>
-
+              <label className="label">Full name</label>
+              <input className="input" placeholder="e.g. Yara Saleh" value={form.name} onChange={e => set('name', e.target.value)} />
             </div>
-
-
-
+            <div>
+              <label className="label">Email (used to sign in)</label>
+              <div className="relative"><Mail size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                <input className="input pl-9" type="email" placeholder="yara@company.com" value={form.email} onChange={e => set('email', e.target.value)} /></div>
+            </div>
+            <div>
+              <label className="label">Temporary password</label>
+              <div className="relative"><Lock size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                <input className="input pl-9" type="text" placeholder="At least 8 characters" value={form.password} onChange={e => set('password', e.target.value)} /></div>
+            </div>
+            <div>
+              <label className="label">Role</label>
+              <select className="input" value={form.role} onChange={e => set('role', e.target.value)}>
+                <option value="Agent">Agent (IT staff)</option>
+                <option value="Admin">Admin</option>
+                <option value="Super Admin">Super Admin</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Department</label>
+              <select className="input" value={form.department} onChange={e => set('department', e.target.value)}>
+                <option value="">No department</option>
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Procurement">Procurement</option>
+              </select>
+            </div>
           </div>
-
-
-
-          {err &&
-            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-              {err}
-            </p>
-          }
-
-
-
+          {err && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
           <div className="mt-4 flex gap-2">
-
-            <button
-              className="btn-primary"
-              onClick={create}
-            >
-              <CheckCircle2 size={16}/>
-              Create account
-            </button>
-
-
-            <button
-              className="btn-ghost"
-              onClick={()=>{
-                setAdding(false)
-                reset()
-              }}
-            >
-              Cancel
-            </button>
-
+            <button className="btn-primary" onClick={create}><CheckCircle2 size={16} /> Create account</button>
+            <button className="btn-ghost" onClick={() => { setAdding(false); reset() }}>Cancel</button>
           </div>
-
-
         </div>
-
       )}
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-slate-100 bg-slate-50">
             <tr>
-              <th>Name</th>
-<th>Email</th>
-<th>Role</th>
-<th>Department</th>
-<th>Status</th>
-<th>Actions</th>
+              <th className="th">Name</th><th className="th">Email</th><th className="th">Role</th>
+              <th className="th">Department</th><th className="th">Status</th>
+              {isSuperAdmin && <th className="th text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {agents.map(a => (
-              <tr key={a.id} className="transition hover:bg-slate-50/60">
-                <td className="td">
-                  <div className="flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-navy-700 text-[11px] font-bold text-white">{initials(a.name)}</span>
-                    <div className="font-semibold text-ink">{a.name}{a.id === session.id && <span className="ml-1.5 text-xs font-normal text-slate-400">(you)</span>}</div>
-                  </div>
-                </td>
-                <td className="td text-slate-600">{a.email}</td>
-                <td className="td">
-  <select
-  className="input py-1 text-sm"
-  value={a.role}
-  disabled={!isSuperAdmin}
-  onChange={e =>
-    updateStaff(a.id,{
-      role:e.target.value
-    })
-  }
->
-    <option value="Agent">Agent</option>
-    <option value="Admin">Admin</option>
-    <option value="Super Admin">Super Admin</option>
-  </select>
-</td>
-                <td className="td">
-  <select
-  className="input py-1 text-sm"
-  value={a.department || ''}
-  disabled={!isSuperAdmin}
-  onChange={e =>
-    updateStaff(a.id,{
-      department:e.target.value
-    })
-  }
->
-    <option value="">No department</option>
-    <option value="IT">IT</option>
-    <option value="HR">HR</option>
-    <option value="Procurement">Procurement</option>
-  </select>
-</td>
-                <td className="td">
-                  <button 
-  disabled={!isSuperAdmin}
-  onClick={() => toggleActive(a)} className={`chip ${a.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-700'}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${a.active === false ? 'bg-slate-400' : 'bg-emerald-500'}`} /> {a.active === false ? 'Inactive' : 'Active'}
-                  </button>
-                </td>
-                <td className="td text-right">
-                  <button onClick={() => remove(a)} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"><Trash2 size={15} /></button>
-                </td>
-              </tr>
-            ))}
+            {agents.map(a => {
+              const editableFully = canFullyManage(a)
+              return (
+                <tr key={a.id} className="transition hover:bg-slate-50/60">
+                  <td className="td">
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-8 w-8 place-items-center rounded-full bg-navy-700 text-[11px] font-bold text-white">{initials(a.name)}</span>
+                      <div className="font-semibold text-ink">{a.name}{a.id === session.id && <span className="ml-1.5 text-xs font-normal text-slate-400">(you)</span>}</div>
+                    </div>
+                  </td>
+                  <td className="td text-slate-600">{a.email}</td>
+                  <td className="td">
+                    {editableFully ? (
+                      <select className="input py-1 text-sm" value={a.role} onChange={e => changeRole(a, e.target.value)}>
+                        <option value="Agent">Agent</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Super Admin">Super Admin</option>
+                      </select>
+                    ) : (
+                      <span className={`chip ${roleChip[a.role] || roleChip.Agent}`}>{a.role}</span>
+                    )}
+                  </td>
+                  <td className="td">
+                    <select
+                      className="input py-1 text-sm"
+                      value={a.department || ''}
+                      disabled={!canEditDepartment}
+                      onChange={e => changeDepartment(a, e.target.value)}
+                    >
+                      <option value="">No department</option>
+                      <option value="IT">IT</option>
+                      <option value="HR">HR</option>
+                      <option value="Procurement">Procurement</option>
+                    </select>
+                  </td>
+                  <td className="td">
+                    <button
+                      disabled={!editableFully}
+                      onClick={() => toggleActive(a)}
+                      className={`chip ${a.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-700'} ${!editableFully ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${a.active === false ? 'bg-slate-400' : 'bg-emerald-500'}`} /> {a.active === false ? 'Inactive' : 'Active'}
+                    </button>
+                  </td>
+                  {isSuperAdmin && (
+                    <td className="td text-right">
+                      <button
+                        disabled={!editableFully}
+                        onClick={() => remove(a)}
+                        className={`rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600 ${!editableFully ? 'opacity-30 cursor-not-allowed' : ''}`}>
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -1788,7 +1665,6 @@ return (
     </div>
   )
 }
-
 /* =====================================================================
    TICKET DETAIL
 ===================================================================== */
