@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabaseClient'
 import logo from './assets/logo.png'
+import { exportTicketsToExcel } from './exportExcel'
 import {
   getTickets, addTicket, updateTicket, deleteTicket, getComments, addComment, getAllComments,
   getSession, signIn, clearSession,
@@ -18,7 +19,7 @@ import {
   User, Loader2, Sparkles, BookOpen, Tag, BarChart3, Gauge, Zap, LayoutGrid,
   Lightbulb, Building2, Mail, Phone, Briefcase, Users,
   Plus, Trash2, UserPlus, EyeOff, Eye,
-  StickyNote, Globe2, Building, Languages,
+  StickyNote, Globe2, Building, Languages, Download,
 } from 'lucide-react'
 
 /* =====================================================================
@@ -1102,6 +1103,9 @@ function Queue({ tickets, onOpen, onRefresh, initialFilter = 'All', session }) {
           <input className="input pl-10" placeholder="Search title, person, email, phone, tag, or #IT-key" value={q} onChange={e => setQ(e.target.value)} />
         </div>
         <button onClick={onRefresh} className="btn-ghost h-[42px] shrink-0"><RefreshCw size={15} /> Refresh</button>
+        <button onClick={() => exportTicketsToExcel(list, 'tickets-export')} className="btn-ghost h-[42px] shrink-0">
+  <Download size={15} /> Export as Excel
+</button>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
