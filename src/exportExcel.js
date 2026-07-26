@@ -54,7 +54,7 @@ export function exportReportToExcel(report, filename = 'helpdesk-report') {
 
   const addBreakdownSheet = (sheetName, data) => {
     if (!data || data.length === 0) return
-    const sheet = XLSX.utils.json_to_sheet(data.map(d => ({ Label: d.label, Count: d.n })))
+    const sheet = XLSX.utils.json_to_sheet(data.map(d => ({ Label: d.label, Count: d.value })))
     sheet['!cols'] = [{ wch: 24 }, { wch: 10 }]
     XLSX.utils.book_append_sheet(workbook, sheet, sheetName)
   }
