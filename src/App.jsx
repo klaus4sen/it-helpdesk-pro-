@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabaseClient'
 import logo from './assets/logo.png'
-import { exportTicketsToExcel } from './exportExcel'
+import { exportTicketsToExcel, exportReportToExcel } from './exportExcel'
 import {
   getTickets, addTicket, updateTicket, deleteTicket, getComments, addComment, getAllComments,
   getSession, signIn, clearSession,
