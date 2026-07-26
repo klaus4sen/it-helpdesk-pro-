@@ -1291,8 +1291,21 @@ function Insights({ tickets }) {
       <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-navy-800 via-brand-700 to-emerald-600 px-5 py-4 shadow-lift">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-extrabold text-white">Helpdesk Analysis</h2>
-          <span className="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">All-time report</span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">All-time report</span>
+            <button
+              onClick={() => exportReportToExcel({
+                summary: { total, automationRate, avgFirstH: avgFirstMins, slaPct },
+                byCat, byPri, byDept, byAgent,
+                internalVsExternal: reqTypeDonut.map(d => ({ label: d.label, value: d.value })),
+              }, 'helpdesk-report')}
+              className="flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/25"
+            >
+              <Download size={14} /> Export as Excel
+            </button>
+          </div>
         </div>
+      </div>
       </div>
 
       <div className="flex flex-wrap gap-3 sm:flex-nowrap">
