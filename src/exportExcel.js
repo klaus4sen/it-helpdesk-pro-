@@ -40,3 +40,31 @@ export function exportTicketsToExcel(tickets, filename = 'tickets-export') {
   const stamp = new Date().toISOString().slice(0, 10)
   XLSX.writeFile(workbook, `${filename}-${stamp}.xlsx`)
 }
+export function exportReportToExcel(report, filename = 'helpdesk-report') {
+  const workbook = XLSX.utils.book_new()
+
+  const summarySheet = XLSX.utils.json_to_sheet([
+    { Metric: 'Total tickets', Value: report.summary.total },
+    { Metric: 'Automation rate', Value: `${report.summary.automationRate}%` },
+    { Metric: 'Avg first reply (hours)', Value: report.summary.avgFirstH },
+    { Metric: 'SLA met', Value: `${report.summary.slaPct}%` },
+  ])
+  summarySheet['!cols'] = [{ wch: 24 }, { wch: 16 }]
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')
+
+  const addBreakdownSheet = (sheetName, data) => {
+    if (!data || data.length === 0) return
+    const sheet = XLSX.utils.json_to_sheet(data.map(d => ({ Label: d.label, Count: d.n })))
+    sheet['!cols'] = [{ wch: 24 }, { wch: 10 }]
+    XLSX.utils.book_append_sheet(workbook, sheet, sheetName)
+  }
+
+  addBreakdownSheet('By Category', report.byCat)
+  addBreakdownSheet('By Priority', report.byPri)
+  addBreakdownSheet('By Department', report.byDept)
+  addBreakdownSheet('By Agent', report.byAgent)
+  addBreakdownSheet('Internal vs External', report.internalVsExternal)
+
+  const stamp = new Date().toISOString().slice(0, 10)
+  XLSX.writeFile(workbook, `${filename}-${stamp}.xlsx`)
+}
