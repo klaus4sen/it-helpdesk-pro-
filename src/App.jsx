@@ -1286,7 +1286,7 @@ function Insights({ tickets }) {
   const reqTypeColors = { Internal: '#1c7ce8', External: '#cbd5e1' }
   const reqTypeDonut = REQUESTER_TYPES.map(rt => ({ label: rt, value: tickets.filter(t => (t.requester_type || 'Internal') === rt).length, color: reqTypeColors[rt] }))
 
-  return (
+ return (
     <div className="space-y-5">
       <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-navy-800 via-brand-700 to-emerald-600 px-5 py-4 shadow-lift">
         <div className="flex items-center justify-between">
@@ -1305,7 +1305,6 @@ function Insights({ tickets }) {
             </button>
           </div>
         </div>
-      </div>
       </div>
 
       <div className="flex flex-wrap gap-3 sm:flex-nowrap">
